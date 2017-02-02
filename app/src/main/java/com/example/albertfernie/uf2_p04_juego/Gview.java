@@ -20,34 +20,45 @@ public class Gview extends View {
     private Timer timer=null ;
     private MyTimerTask task;
     private int interval=100;
-    Bitmap bmp1, bmp2;
-    float x = 0, y, x2, y2;
-    int width, height;
+    Bitmap raqueta, bola;
+    float xRaqueta = 0, yRaqueta, xBola=0, yBola=0;
+    int tamRaqueta, width, height, sentidoX=1, sentidoY=1;
+    boolean inicio = true;
 
     public Gview(Context context) {
         super(context);
-        bmp1 = BitmapFactory.decodeResource(getResources(), R.drawable.raqueta);
-        bmp2 = BitmapFactory.decodeResource(getResources(), R.drawable.bola_azul);
+        raqueta = BitmapFactory.decodeResource(getResources(), R.drawable.raqueta);
+        bola = BitmapFactory.decodeResource(getResources(), R.drawable.bola_azul);
+        inicio();
+        startTimer();
+    }
+
+    private void inicio(){
+        tamRaqueta = 150;
+        xRaqueta = width / 2;
+        xBola = width / 2;
+        yBola = height * (float) 0.75;
     }
 
     protected void onDraw(Canvas canvas){
         super.onDraw(canvas);
         width = canvas.getWidth();
         height = canvas.getHeight();
+        yRaqueta = height/10*9;
         canvas.drawColor(Color.YELLOW);
-        if(x==0) canvas.drawBitmap(bmp1, 400, 1000, null);
-        else canvas.drawBitmap(bmp1, x - 150, 1000, null);
-        //canvas.drawBitmap(bmp2, x2 - 60, y2 - 60, null);
+        canvas.drawBitmap(raqueta, xRaqueta - tamRaqueta, yRaqueta, null);
+        canvas.drawBitmap(bola, xBola, yBola, null);
     }
 
     public boolean onTouchEvent(MotionEvent event) {
-        x = event.getX();
+        xRaqueta = event.getX();
         this.invalidate();
-        return super.onTouchEvent(event);
+        //return super.onTouchEvent(event);
+        return true;
     }
 
     public void taskTimer(){
-        //el código que queremos ejecutar en timer
+        posicionBola();
         this.invalidate();
     }
 
@@ -60,6 +71,16 @@ public class Gview extends View {
     private void stopTimer(){
         timer.cancel();
         timer=null; task=null;
+    }
+
+    private void posicionBola(){
+        int deltaX = 5, deltaY = 3;
+        if(xBola>=width - 90) sentidoX = -1;
+        if(yBola>=yRaqueta - 90) sentidoY = -1;
+        if(xBola<=0) sentidoX = 1;
+        if(yBola<=0) sentidoY = 1;
+        xBola += deltaX * sentidoX;
+        yBola += deltaY * sentidoY;
     }
 
 }
