@@ -5,15 +5,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-//import android.media.MediaPlayer;
+import android.media.MediaPlayer;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.Timer;
 import java.util.TimerTask;
-
-import static com.example.albertfernie.uf2_p04_juego.R.raw.golpecomico1;
 
 /**
  * Created by albertfernie on 31/01/2017.
@@ -24,26 +22,24 @@ public class Gview extends View {
     private MyTimerTask task;
     private int interval=100;
     Bitmap raqueta, bola, fondo;
-    //MediaPlayer mediaPlayer1;
+    MediaPlayer mediaPlayer1, mediaPlayer2;
     float xRaqueta = 0, yRaqueta, xBola=0, yBola=0;
     int tamRaqueta, width, height, sentidoX=1, sentidoY=1;
-    boolean inicio = true;
+    boolean start = true;
 
     public Gview(Context context) {
         super(context);
-        raqueta = BitmapFactory.decodeResource(getResources(), R.drawable.raqueta);
-        bola = BitmapFactory.decodeResource(getResources(), R.drawable.bola_azul);
-        fondo = BitmapFactory.decodeResource(getResources(), R.drawable.hell);
-        //mediaPlayer1 = MediaPlayer.create(this, R.raw.golpecomico1);
         inicio();
         startTimer();
     }
 
     private void inicio(){
+        raqueta = BitmapFactory.decodeResource(getResources(), R.drawable.raqueta);
+        bola = BitmapFactory.decodeResource(getResources(), R.drawable.bola_azul);
+        fondo = BitmapFactory.decodeResource(getResources(), R.drawable.hell);
+        mediaPlayer1 = MediaPlayer.create(super.getContext(), R.raw.golpecomico1);
+        mediaPlayer2 = MediaPlayer.create(super.getContext(), R.raw.golpemetalico3);
         tamRaqueta = 150;
-        xRaqueta = width / 2;
-        xBola = width / 2;
-        yBola = height * (float) 0.75;
     }
 
     protected void onDraw(Canvas canvas){
@@ -52,6 +48,12 @@ public class Gview extends View {
         width = canvas.getWidth();
         height = canvas.getHeight();
         yRaqueta = height/10*8;
+        if(start == true) {
+            xRaqueta = width / 10 * 5;
+            xBola = width / 2;
+            yBola = height / 2;
+            start = false;
+        }
         //canvas.drawColor(Color.YELLOW);
         canvas.drawBitmap(raqueta, xRaqueta - tamRaqueta, yRaqueta, null);
         canvas.drawBitmap(bola, xBola, yBola, null);
@@ -59,8 +61,8 @@ public class Gview extends View {
 
     public boolean onTouchEvent(MotionEvent event) {
         xRaqueta = event.getX();
+        if(start ==true) startTimer();
         this.invalidate();
-        //return super.onTouchEvent(event);
         return true;
     }
 
@@ -77,22 +79,38 @@ public class Gview extends View {
 
     private void stopTimer(){
         timer.cancel();
-        timer=null; task=null;
+        timer=null;
+        task=null;
     }
 
     private void posicionBola(){
         int deltaX = 10, deltaY = 6;
-        if(xBola>=width - 90) sentidoX = -1;
-        if(yBola >= height -90){
-            if (yBola>=yRaqueta - 90) sentidoY = -1;
-            else stopTimer();
+        if(xBola>=width - 90) {
+            sentidoX = -1;
+            mediaPlayer1.start();
         }
-        if(xBola<=0) sentidoX = 1;
-        if(yBola<=0) sentidoY = 1;
+        if (yBola>=yRaqueta - 90 && xBola>=xRaqueta && xBola<=xRaqueta - 90) {
+            sentidoY = -1;
+            mediaPlayer2.start();
+        }
+        else {
+            if(yBola == height) {
+                //sentidoY = -1;
+                stopTimer();
+                start = true;
+            }
+        }
+        if(xBola<=0) {
+            sentidoX = 1;
+            mediaPlayer1.start();
+        }
+        if(yBola<=0) {
+            sentidoY = 1;
+            mediaPlayer1.start();
+        }
         xBola += deltaX * sentidoX;
         yBola += deltaY * sentidoY;
     }
-
 }
 
 class MyTimerTask extends TimerTask {
